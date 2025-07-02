@@ -113,7 +113,8 @@
                             <tr>
                                 <th scope="col" class="px-6 py-3 rounded-l-lg">Ingredient (English)</th>
                                 <th scope="col" class="px-6 py-3">Składnik (Polish)</th>
-                                <th scope="col" class="px-6 py-3 rounded-r-lg">Quantity</th>
+                                <th scope="col" class="px-6 py-3">Quantity</th>
+                                <th scope="col" class="px-6 py-3 rounded-r-lg">Expected Cost (PLN)</th>
                             </tr>
                         </thead>
                         <tbody id="shopping-list-body">
@@ -441,47 +442,47 @@ const grillPlan = {
     },
     // Removed retailerCosts as the chart is removed
     shoppingList: [
-        { english: "Pork Tenderloin", polish: "Polędwiczka wieprzowa", qty: "4.5 kg" },
-        { english: "Chicken Thighs", polish: "Udka kurczaka", qty: "4.5 kg" },
-        { english: "Tofu/Tempeh", polish: "Tofu/Tempeh", qty: "2.5 kg" },
-        { english: "Large Portobello Mushrooms", polish: "Duże Pieczarki Portobello", qty: "30 pieces" },
-        { english: "Grana Padano Cheese", polish: "Ser Grana Padano", qty: "0.5 kg" },
-        { english: "Goat Cheese", polish: "Ser Kozi", qty: "0.5 kg" },
-        { english: "Gouda Cheese", polish: "Ser Gouda", qty: "0.5 kg" },
-        { english: "Polish Halloumi Cheese", polish: "Ser Halloumi Polski", qty: "2 kg" },
-        { english: "Masa Harina", polish: "Masa Harina", qty: "2 kg" },
-        { english: "Asparagus", polish: "Szparagi", qty: "15-20 bunches" },
-        { english: "Beetroot", polish: "Buraki", qty: "6 kg" },
-        { english: "Arugula", polish: "Rukola", qty: "2-3 large bags" },
-        { english: "Corn on the Cob", polish: "Kukurydza w kolbie", qty: "30 pieces" },
-        { english: "Red Bell Peppers", polish: "Czerwona Papryka", qty: "1.5 kg" },
-        { english: "Zucchini", polish: "Cukinia", qty: "1 kg" },
-        { english: "Cherry Tomatoes", polish: "Pomidorki koktajlowe", qty: "1 kg" },
-        { english: "Yellow Onions", polish: "Cebula Żółta", qty: "1 kg" },
-        { english: "Fresh Garlic", polish: "Czosnek Świeży", qty: "15 heads" },
-        { english: "Lemons", polish: "Cytryny", qty: "6 pieces" },
-        { english: "Blueberries", polish: "Borówki", qty: "0.5 kg" },
-        { english: "Feta Cheese", polish: "Ser Feta", qty: "0.75 kg" },
-        { english: "Plain Yogurt", polish: "Jogurt Naturalny", qty: "1 kg" },
-        { english: "Mayonnaise", polish: "Majonez", qty: "0.5 kg" },
-        { english: "Dijon Mustard", polish: "Musztarda Dijon", qty: "0.5 kg" },
-        { english: "Ketchup", polish: "Keczup", qty: "1 kg" },
-        { english: "Balsamic Glaze", polish: "Glazura Balsamiczna", qty: "1-2 bottles" },
-        { english: "Olive Oil", polish: "Oliwa z Oliwek", qty: "1 liter" },
-        { english: "Honey", polish: "Miód", qty: "1 kg" },
-        { english: "Butter", polish: "Masło", qty: "0.5 kg" },
-        { english: "Fresh Rosemary", polish: "Świeży Rozmaryn", qty: "3 bunches" },
-        { english: "Fresh Thyme", polish: "Świeży Tymianek", qty: "3 bunches" },
-        { english: "Fresh Dill", polish: "Świeży Koper", qty: "5 bunches" },
-        { english: "Smoked Paprika", polish: "Wędzona Papryka", qty: "0.1 kg" },
-        { english: "Cayenne Pepper", polish: "Pieprz Cayenne", qty: "50g" },
-        { english: "Salt", polish: "Sól", qty: "1 kg" },
-        { english: "Black Pepper", polish: "Pieprz Czarny", qty: "0.2 kg" },
-        { english: "Charcoal", polish: "Węgiel Drzewny", qty: "7 kg" },
-        { english: "Aluminum Foil (Heavy-Duty)", polish: "Folia Aluminiowa (Gruba)", qty: "2 large rolls" },
-        { english: "Serving Platters (disposable/reusable)", polish: "Tace Serwowania", qty: "10-15 pieces" },
-        { english: "Napkins", polish: "Serwetki", qty: "1 large pack" },
-        { english: "Cutlery (disposable/reusable)", polish: "Sztućce", qty: "30 sets" },
+        { english: "Pork Tenderloin", polish: "Polędwiczka wieprzowa", qty: "4.5 kg", expectedCost: 150.00 },
+        { english: "Chicken Thighs", polish: "Udka kurczaka", qty: "4.5 kg", expectedCost: 60.00 },
+        { english: "Tofu/Tempeh", polish: "Tofu/Tempeh", qty: "2.5 kg", expectedCost: 75.00 },
+        { english: "Large Portobello Mushrooms", polish: "Duże Pieczarki Portobello", qty: "30 pieces", expectedCost: 60.00 },
+        { english: "Grana Padano Cheese", polish: "Ser Grana Padano", qty: "0.5 kg", expectedCost: 45.00 },
+        { english: "Goat Cheese", polish: "Ser Kozi", qty: "0.5 kg", expectedCost: 35.00 },
+        { english: "Gouda Cheese", polish: "Ser Gouda", qty: "0.5 kg", expectedCost: 20.00 },
+        { english: "Polish Halloumi Cheese", polish: "Ser Halloumi Polski", qty: "2 kg", expectedCost: 80.00 },
+        { english: "Masa Harina", polish: "Masa Harina", qty: "2 kg", expectedCost: 28.00 },
+        { english: "Asparagus", polish: "Szparagi", qty: "15-20 bunches", expectedCost: 75.00 },
+        { english: "Beetroot", polish: "Buraki", qty: "6 kg", expectedCost: 18.00 },
+        { english: "Arugula", polish: "Rukola", qty: "2-3 large bags", expectedCost: 15.00 },
+        { english: "Corn on the Cob", polish: "Kukurydza w kolbie", qty: "30 pieces", expectedCost: 60.00 },
+        { english: "Red Bell Peppers", polish: "Czerwona Papryka", qty: "1.5 kg", expectedCost: 18.00 },
+        { english: "Zucchini", polish: "Cukinia", qty: "1 kg", expectedCost: 8.00 },
+        { english: "Cherry Tomatoes", polish: "Pomidorki koktajlowe", qty: "1 kg", expectedCost: 15.00 },
+        { english: "Yellow Onions", polish: "Cebula Żółta", qty: "1 kg", expectedCost: 3.00 },
+        { english: "Fresh Garlic", polish: "Czosnek Świeży", qty: "15 heads", expectedCost: 30.00 },
+        { english: "Lemons", polish: "Cytryny", qty: "6 pieces", expectedCost: 18.00 },
+        { english: "Blueberries", polish: "Borówki", qty: "0.5 kg", expectedCost: 15.00 },
+        { english: "Feta Cheese", polish: "Ser Feta", qty: "0.75 kg", expectedCost: 30.00 },
+        { english: "Plain Yogurt", polish: "Jogurt Naturalny", qty: "1 kg", expectedCost: 12.00 },
+        { english: "Mayonnaise", polish: "Majonez", qty: "0.5 kg", expectedCost: 10.00 },
+        { english: "Dijon Mustard", polish: "Musztarda Dijon", qty: "0.5 kg", expectedCost: 15.00 },
+        { english: "Ketchup", polish: "Keczup", qty: "1 kg", expectedCost: 8.00 },
+        { english: "Balsamic Glaze", polish: "Glazura Balsamiczna", qty: "1-2 bottles", expectedCost: 25.00 },
+        { english: "Olive Oil", polish: "Oliwa z Oliwek", qty: "1 liter", expectedCost: 35.00 },
+        { english: "Honey", polish: "Miód", qty: "1 kg", expectedCost: 20.00 },
+        { english: "Butter", polish: "Masło", qty: "0.5 kg", expectedCost: 16.00 },
+        { english: "Fresh Rosemary", polish: "Świeży Rozmaryn", qty: "3 bunches", expectedCost: 12.00 },
+        { english: "Fresh Thyme", polish: "Świeży Tymianek", qty: "3 bunches", expectedCost: 12.00 },
+        { english: "Fresh Dill", polish: "Świeży Koper", qty: "5 bunches", expectedCost: 25.00 },
+        { english: "Smoked Paprika", polish: "Wędzona Papryka", qty: "0.1 kg", expectedCost: 8.00 },
+        { english: "Cayenne Pepper", polish: "Pieprz Cayenne", qty: "50g", expectedCost: 7.00 },
+        { english: "Salt", polish: "Sól", qty: "1 kg", expectedCost: 3.00 },
+        { english: "Black Pepper", polish: "Pieprz Czarny", qty: "0.2 kg", expectedCost: 10.00 },
+        { english: "Charcoal", polish: "Węgiel Drzewny", qty: "7 kg", expectedCost: 45.00 },
+        { english: "Aluminum Foil (Heavy-Duty)", polish: "Folia Aluminiowa (Gruba)", qty: "2 large rolls", expectedCost: 15.00 },
+        { english: "Serving Platters (disposable/reusable)", polish: "Tace Serwowania", qty: "10-15 pieces", expectedCost: 40.00 },
+        { english: "Napkins", polish: "Serwetki", qty: "1 large pack", expectedCost: 10.00 },
+        { english: "Cutlery (disposable/reusable)", polish: "Sztućce", qty: "30 sets", expectedCost: 30.00 },
     ]
 };
 
@@ -522,19 +523,29 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     function renderShoppingList() {
-        shoppingListBody.innerHTML = grillPlan.shoppingList.map(item => `
-            <tr class="bg-white border-b hover:bg-gray-50">
-                <td class="px-6 py-4 font-medium text-gray-900">${item.english}</td>
-                <td class="px-6 py-4">${item.polish}</td>
-                <td class="px-6 py-4">${item.qty}</td>
+        let totalExpectedCost = 0;
+        const rows = grillPlan.shoppingList.map(item => {
+            const cost = item.expectedCost || 0;
+            totalExpectedCost += cost;
+            return `
+                <tr class="bg-white border-b hover:bg-gray-50">
+                    <td class="px-6 py-4 font-medium text-gray-900">${item.english}</td>
+                    <td class="px-6 py-4">${item.polish}</td>
+                    <td class="px-6 py-4">${item.qty}</td>
+                    <td class="px-6 py-4">${item.expectedCost ? item.expectedCost.toFixed(2) + ' PLN' : 'N/A'}</td>
+                </tr>
+            `;
+        }).join('');
+
+        shoppingListBody.innerHTML = rows + `
+            <tr class="bg-gray-100 font-bold text-gray-900">
+                <td class="px-6 py-4" colspan="3">Total Expected Cost:</td>
+                <td class="px-6 py-4">${totalExpectedCost.toFixed(2)} PLN</td>
             </tr>
-        `).join('');
+        `;
     }
 
-    // Removed renderCostChart function as the chart is no longer displayed
-
     renderMenu('nowoczesny'); // Set "Modern Fusion Grill" as the default displayed menu
-    // Removed renderCostChart() call
     renderShoppingList();
 });
 
