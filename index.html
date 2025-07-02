@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Polish Grill Planner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Primary Colors (Red, Blue, Yellow) -->
+    <!-- Application Structure Plan: A task-oriented dashboard structure was chosen over a linear report format to empower the user (event planner). The core of the app is the 'Menu Explorer', which uses tabs for direct, at-a-glance comparison of the three distinct meal options—primary decision point. This is supported by a 'Cost & Shopping Hub' that visualizes the final cost analysis with a bar chart for quick comprehension and provides a toggleable shopping list to avoid initial clutter. A final 'Logistics' section uses cards to present actionable advice. This structure isolates key tasks (Compare Menus, Analyze Costs, Execute Plan) into clear, interactive sections, making the information more digestible and usable than a simple document. -->
+    <!-- Visualization & Content Choices: 
+        - Menu Comparison: Report Info -> 3 menu options with different items and costs. Goal -> Compare. Viz -> Dynamic HTML content blocks updated via JS. Interaction -> Buttons to switch menus. Justification -> Allows direct, side-by-side comparison of qualitative (items) and quantitative (cost) data, which is the user's main task. Method -> Vanilla JS DOM manipulation.
+        - Retailer Cost Analysis: Report Info -> Total cost for shopping list at 3 stores. Goal -> Compare. Viz -> Bar Chart. Interaction -> Hover tooltips showing exact PLN. Justification -> A bar chart provides a much faster, more impactful visual comparison of prices than a table, immediately highlighting the "best value" retailer. Library -> Chart.js.
+        - Shopping List: Report Info -> A detailed table of ingredients. Goal -> Organize/Inform. Viz -> HTML table. Interaction -> Show/Hide toggle button. Justification -> A table is optimal for structured list data. Making it toggleable reduces initial information overload. Method -> Vanilla JS class toggling.
+        - Expert Recommendations: Report Info -> Paragraphs of expert advice. Goal -> Inform/Organize. Viz -> Accordion-style cards. Interaction -> Click to expand/collapse. Justification -> Breaks down dense text into scannable, manageable topics, improving readability. Method -> Vanilla JS.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F8F8; /* Very light grey */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 50vh;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-button {
+            transition: all 0.3s ease;
+        }
+        .nav-button.active {
+            background-color: #EF4444; /* Red-500 */
+            color: #FFFFFF;
+            font-weight: 700;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        .nav-button:not(.active):hover {
+            background-color: #FEE2E2; /* Red-100 */
+        }
+        .pro-tip-card {
+            background-color: #FFFFFF;
+            border-left: 4px solid #F59E0B; /* Amber-500 (Yellow primary accent) */
+        }
+    </style>
+</head>
+<body class="text-gray-900">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-blue-700 mb-2">Polish Grill Planner</h1>
+            <p class="text-lg text-gray-700">An interactive guide for your perfect grill party for 30 people.</p>
+        </header>
+
+        <main class="space-y-12">
+            
+            <section id="menu-explorer" class="bg-white p-6 rounded-2xl shadow-lg">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold text-center mb-2 text-blue-700">Explore Menu Options</h2>
+                    <p class="text-center text-gray-700 max-w-3xl mx-auto">Choose one of the three culinary proposals to see the details. Each menu is carefully designed to cater to different tastes and budgets, while incorporating special items: stuffed mushrooms, arepas, and grilled halloumi cheese.</p>
+                </div>
+
+                <div class="flex justify-center flex-wrap gap-2 mb-8" id="menu-nav">
+                    <button data-menu="klasyczny" class="nav-button px-6 py-3 rounded-full text-gray-700 bg-gray-100 font-medium">Classic Polish Grill</button>
+                    <button data-menu="nowoczesny" class="nav-button px-6 py-3 rounded-full text-gray-700 bg-gray-100 font-medium">Modern Fusion Grill</button>
+                    <button data-menu="budzetowy" class="nav-button px-6 py-3 rounded-full text-gray-700 bg-gray-100 font-medium">Budget-Friendly Feast</button>
+                </div>
+
+                <div id="menu-content" class="transition-opacity duration-500 ease-in-out">
+                    <div class="text-center mb-6 border-b border-gray-200 pb-6">
+                        <h3 id="menu-title" class="text-2xl font-bold text-red-600"></h3>
+                        <p id="menu-description" class="text-gray-700 mt-1 max-w-2xl mx-auto"></p>
+                        <div id="menu-cost" class="mt-4 text-xl font-semibold text-yellow-800 bg-yellow-100/50 inline-block px-4 py-2 rounded-lg"></div>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6 text-left">
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2 text-gray-800">Main Courses</h4>
+                            <ul id="mains-list" class="list-disc list-inside space-y-1 text-gray-700"></ul>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2 text-gray-800">Sides</h4>
+                            <ul id="sides-list" class="list-disc list-inside space-y-1 text-gray-700"></ul>
+                        </div>
+                        <div class="bg-gray-50 p-4 rounded-lg">
+                            <h4 class="font-bold text-lg mb-2 text-gray-800">Condiments</h4>
+                            <ul id="condiments-list" class="list-disc list-inside space-y-1 text-gray-700"></ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="cost-shopping" class="bg-white p-6 rounded-2xl shadow-lg">
+                 <div class="mb-6">
+                    <h2 class="text-3xl font-bold text-center mb-2 text-blue-700">Cost Analysis & Shopping</h2>
+                    <p class="text-center text-gray-700 max-w-3xl mx-auto">Below you will find a complete shopping list for the recommended "Classic Polish Grill" menu.</p>
+                </div>
+                <div id="shopping-list-container" class="mt-8 overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-600">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 rounded-l-lg">Ingredient (English)</th>
+                                <th scope="col" class="px-6 py-3">Składnik (Polish)</th>
+                                <th scope="col" class="px-6 py-3 rounded-r-lg">Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shopping-list-body">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+            
+            <section id="logistics">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold text-center mb-2 text-blue-700">Logistics & Expert Tips</h2>
+                    <p class="text-center text-gray-700 max-w-3xl mx-auto">Good preparation is key to success. Familiarize yourself with our recommendations for preparation, grill management, and planning to ensure your party runs smoothly.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="pro-tip-card p-6 rounded-lg shadow-md">
+                        <h3 class="font-bold text-xl mb-2">Equipment Requirements</h3>
+                        <p class="text-gray-700">To ensure continuous grilling for 5-6 hours for 30 people, prepare:</p>
+                        <ul class="mt-4 space-y-2">
+                           <li class="flex items-start">
+                                <span class="text-yellow-600 font-bold mr-2 mt-1">&#10003;</span>
+                                <span><strong class="font-semibold">2-3 kettle grills:</strong> This will allow for different heat zones.</span>
+                           </li>
+                           <li class="flex items-start">
+                                <span class="text-yellow-600 font-bold mr-2 mt-1">&#10003;</span>
+                                <span><strong class="font-semibold">Approx. 7 kg of charcoal:</strong> This will provide enough fuel for the entire event.</span>
+                           </li>
+                        </ul>
+                    </div>
+                    <div class="pro-tip-card p-6 rounded-lg shadow-md">
+                        <h3 class="font-bold text-xl mb-2">Grill Management</h3>
+                         <p class="text-gray-700">Divide the grills into zones: one for searing meats at high temperature (pork neck), another for slower cooking (sausages, vegetables in foil), and a third (if available) dedicated to vegetarian dishes to avoid cross-contamination of flavors.</p>
+                    </div>
+                    <div class="pro-tip-card p-6 rounded-lg shadow-md">
+                        <h3 class="font-bold text-xl mb-2">Advance Preparation</h3>
+                         <p class="text-gray-700">Marinate meat the day before. Prepare salads and sauces on the morning of the party. Chop vegetables and prepare foil packets tuż before guests arrive to maintain freshness. This is key to stress-free grilling.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="preparation-guide" class="bg-white p-6 rounded-2xl shadow-lg">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold text-center mb-2 text-blue-700">Detailed Preparation & Storage Guide</h2>
+                    <p class="text-center text-gray-700 max-w-3xl mx-auto">Follow these steps to prepare, cut, and store all ingredients for "The Classic Polish Grill" menu, ensuring freshness and efficiency on party day.</p>
+                </div>
+
+                <div class="space-y-8">
+                    <!-- Meats -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4">Meats</h3>
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Smoked Kielbasa</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: No extensive preparation needed.</li>
+                                    <li>Cutting: Slice diagonally (on the bias) into 1.5-2 cm thick pieces.</li>
+                                    <li>Storage: Keep refrigerated in original packaging. Can be frozen for longer storage.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Polish White Sausage</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Prick with a fork a few times. Marinate for 2-3 hours in a mixture of beer, minced garlic, and sweet pepper.</li>
+                                    <li>Cutting: Can be grilled whole or cut into larger pieces.</li>
+                                    <li>Storage: Keep refrigerated in marinade. Cook within 24 hours of marinating.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Pork Neck</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Trim excess fat. Marinate in mustard, fermented cucumber brine, fresh garlic, sliced onion, a touch of apple, rosemary, and honey. Marinate a minimum of 6 hours, ideally overnight (up to 24 hours).</li>
+                                    <li>Cutting: Slice into 1.5-2 cm thick steaks.</li>
+                                    <li>Storage: Keep refrigerated in marinade.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cheeses & Specialty Vegetarian -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4">Cheeses & Specialty Vegetarian</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Stuffed Portobello Mushrooms</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Gently wipe mushrooms clean, remove stems. Mix Grana Padano, goat cheese, and Gouda. Stuff mushroom caps generously.</li>
+                                    <li>Cutting: No cutting before stuffing.</li>
+                                    <li>Storage: Store stuffed mushrooms covered in the refrigerator for up to 1 day before grilling.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Polish Halloumi Cheese</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Pat dry with paper towels.</li>
+                                    <li>Cutting: Slice into 1 cm thick pieces.</li>
+                                    <li>Storage: Keep refrigerated in original brine until ready to grill. Once opened, store in an airtight container.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Vegetables & Sides -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4">Vegetables & Sides</h3>
+                        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Asparagus</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash thoroughly. Snap off woody ends. Lightly toss with olive oil, salt, and pepper.</li>
+                                    <li>Cutting: No cutting needed if using whole spears.</li>
+                                    <li>Storage: Store unwashed in the refrigerator with ends wrapped in a damp paper towel or standing upright in a glass with an inch of water. Use within 2-3 days.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Beetroot (for Roasted Beetroot Salad)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash well. Trim tops and roots. Roast whole or cut into wedges until tender. Peel after roasting.</li>
+                                    <li>Cutting: Dice or cut into wedges after roasting and peeling.</li>
+                                    <li>Storage: Roasted and diced beetroot can be stored in an airtight container in the refrigerator for up to 3-4 days.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Arugula (for Roasted Beetroot Salad)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash thoroughly and pat dry.</li>
+                                    <li>Cutting: No cutting needed.</li>
+                                    <li>Storage: Store in a sealed bag lined with paper towels in the refrigerator. Use within 2-3 days.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Corn on the Cob</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Remove husks and silk.</li>
+                                    <li>Cutting: No cutting needed.</li>
+                                    <li>Storage: Store unhusked in the refrigerator for up to a week. Husked corn is best grilled fresh.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Red Bell Peppers (for Skewers)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash, remove stem, seeds, and white pith.</li>
+                                    <li>Cutting: Cut into 2-3 cm chunks suitable for skewers.</li>
+                                    <li>Storage: Store cut peppers in an airtight container in the refrigerator for up to 2-3 days.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Zucchini (for Skewers)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash, trim ends.</li>
+                                    <li>Cutting: Cut into 2-3 cm thick rounds or half-moons suitable for skewers.</li>
+                                    <li>Storage: Store cut zucchini in an airtight container in the refrigerator for up to 2-3 days.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Cherry Tomatoes (for Skewers)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash.</li>
+                                    <li>Cutting: No cutting needed.</li>
+                                    <li>Storage: Store at room temperature for best flavor. If cut, store in an airtight container in the refrigerator for up to 1 day.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Yellow Onions (for Skewers & General Use)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Peel.</li>
+                                    <li>Cutting: Cut into wedges for skewers, slice or mince for other uses.</li>
+                                    <li>Storage: Store whole in a cool, dry, dark place. Once cut, store in an airtight container in the fridge for up to 2 days.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Fresh Garlic</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Peel cloves.</li>
+                                    <li>Cutting: Mince or crush.</li>
+                                    <li>Storage: Whole heads in a cool, dry place. Peeled/minced cloves in an airtight container in the fridge for up to a week.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Lemons</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash.</li>
+                                    <li>Cutting: Halves or wedges for serving, juice for marinades/dressings.</li>
+                                    <li>Storage: Room temperature for a few days, or refrigerated for longer.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Blueberries (for BBQ Sauce)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Wash thoroughly.</li>
+                                    <li>Cutting: No cutting needed.</li>
+                                    <li>Storage: Store fresh in the refrigerator. If using frozen, keep frozen until ready to use in sauce.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Condiments & Staples -->
+                    <div>
+                        <h3 class="text-2xl font-bold text-red-600 mb-4">Condiments & Staples</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Sauces & Dairy (Sour Cream, Yogurt, Mayo, Mustard, Horseradish, Olive Oil, Butter)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Store-bought items. Prepare homemade sauces (Garlic Sauce, Dill Sauce) by mixing ingredients.</li>
+                                    <li>Cutting: N/A.</li>
+                                    <li>Storage: Keep refrigerated after opening. Homemade sauces should be stored in airtight containers in the fridge for up to 2-3 days.</li>
+                                </ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-bold text-lg mb-2 text-gray-800">Dry Goods & Supplies (Charcoal, Salt, Pepper, Spices, Foil)</h4>
+                                <ul class="list-disc list-inside space-y-1 text-gray-700">
+                                    <li>Preparation: Ensure all are readily accessible near the grilling area.</li>
+                                    <li>Cutting: N/A.</li>
+                                    <li>Storage: Store in a cool, dry place away from direct sunlight and moisture.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="faq-portions" class="bg-white p-6 rounded-2xl shadow-lg">
+                <div class="mb-6">
+                    <h2 class="text-3xl font-bold text-center mb-2 text-blue-700">FAQ: Portion Estimations</h2>
+                    <p class="text-center text-gray-700 max-w-3xl mx-auto">Understanding how much food is needed for a large, extended grill party is key. Here are the general portion guidelines for this event.</p>
+                </div>
+
+                <div class="space-y-6">
+                    <div>
+                        <h3 class="font-bold text-xl mb-2 text-red-600">Q: What is the portion per person for grilled meats (Kielbasa, Pork Neck)?</h3>
+                        <p class="text-gray-700">A: For meat-eaters, we estimate approximately <strong>350-450 grams (0.75-1 lb)</strong> per person. This accounts for the variety of meats offered and the expectation of continuous eating over the 5-6 hour event duration. The total quantity of 12.5 kg of meat (4 kg Smoked Kielbasa + 4 kg White Sausage + 4.5 kg Pork Neck) is designed to be generous for 21 meat-eaters.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2 text-red-600">Q: How many Stuffed Portobello Mushrooms will each guest receive?</h3>
+                        <p class="text-gray-700">A: Each guest (meat-eater and vegetarian) is allocated <strong>one large stuffed Portobello mushroom</strong>, totaling 30 mushrooms for the event. This ensures a substantial vegetarian main option for all, and a delicious side for meat-eaters.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2 text-red-600">Q: What is the portion for Polish Halloumi Cheese?</h3>
+                        <p class="text-gray-700">A: For vegetarians, approximately <strong>150-200 grams of Polish Halloumi</strong> is allocated per person as a main course. Additionally, extra Halloumi is provided for general snacking for all guests.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2 text-red-600">Q: How many Arepas are estimated per person?</h3>
+                        <p class="text-gray-700">A: Guests can expect to have <strong>2-3 Colombian-style Arepas</strong> each, serving as a versatile bread/starch alternative throughout the party.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-xl mb-2 text-red-600">Q: What are the portion sizes for the main side dishes (Cucumbers for Mizeria, Sauerkraut, Potatoes)?</h3>
+                        <p class="text-gray-700">A: For major side dishes like Mizeria, Sauerkraut, and Grilled Potatoes, we estimate approximately <strong>200-300 grams per person for each side</strong>. This allows guests to mix and match and ensures ample supply for continuous consumption over the extended event duration.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+        
+        <footer class="text-center mt-12 pt-8 border-t border-gray-200">
+            <p class="text-gray-500 text-sm">&copy; 2025 Interactive Grill Planner. Created based on event planning report.</p>
+        </footer>
+
+    </div>
+
+<script>
+const grillPlan = {
+    menus: {
+        klasyczny: {
+            name: "Classic Polish Grill",
+            description: "A tribute to traditional Polish 'grillowanie,' focusing on beloved staples and authentic flavors that evoke a sense of heritage and comfort.",
+            cost: "approx. 1,200 - 1,500 PLN",
+            mains: [
+                "Grilled Kielbasa (Smoked and White)",
+                "Grilled Pork Neck in traditional marinade",
+                "Stuffed Portobello Mushrooms (specialty)",
+                "Grilled Halloumi Cheese (specialty)",
+            ],
+            sides: [
+                "Mizeria (Cucumber Salad)",
+                "Grilled Sauerkraut with onions",
+                "Grilled Potatoes and Onions in Foil",
+                "Colombian-style Arepas (specialty)",
+            ],
+            condiments: [
+                "Sarepska Mustard",
+                "Horseradish Sauce",
+                "Garlic Sauce",
+                "Dill Sauce",
+            ]
+        },
+        nowoczesny: {
+            name: "Modern Fusion Grill",
+            description: "A blend of traditional Polish flavors with international influences, creating a contemporary and exciting culinary experience for daring gourmets.",
+            cost: "approx. 1,400 - 1,700 PLN",
+            mains: [
+                "Honey-Mustard Glazed Pork Tenderloin Skewers",
+                "Grilled Chicken with Herb-infused Marinade",
+                "Stuffed Portobello Mushrooms (specialty)",
+                "Grilled Halloumi Cheese (specialty)",
+                "Tofu/Tempeh Skewers with Blueberry BBQ Sauce"
+            ],
+            sides: [
+                "Grilled Asparagus with Lemon-Dill Butter",
+                "Roasted Beetroot and Feta Salad",
+                "Grilled Corn on the Cob with Paprika Butter",
+                "Colombian-style Arepas (specialty)",
+            ],
+            condiments: [
+                "Spicy Ketchup-Honey Glaze",
+                "Creamy Dill Dip",
+                "Smoked Paprika Aioli",
+            ]
+        },
+        budzetowy: {
+            name: "Budget-Friendly Feast",
+            description: "Prioritizing cost-effective yet delicious and satisfying choices, ensuring a hearty Polish grill experience without compromising on flavor.",
+            cost: "approx. 900 - 1,100 PLN",
+            mains: [
+                "Grilled Kielbasa",
+                "Grilled Chicken Thighs",
+                "Stuffed Portobello Mushrooms (specialty)",
+                "Grilled Halloumi Cheese (specialty)",
+                "Grilled Vegetable Skewers",
+            ],
+            // Added missing condiments array for 'budzetowy' menu
+            condiments: [
+                "Standard Ketchup and Mustard",
+                "Simple Garlic Yogurt Dip",
+            ]
+        }
+    },
+    // Removed retailerCosts as the chart is removed
+    shoppingList: [
+        { english: "Pork Tenderloin", polish: "Polędwiczka wieprzowa", qty: "4.5 kg" },
+        { english: "Chicken Thighs", polish: "Udka kurczaka", qty: "4.5 kg" },
+        { english: "Tofu/Tempeh", polish: "Tofu/Tempeh", qty: "2.5 kg" },
+        { english: "Large Portobello Mushrooms", polish: "Duże Pieczarki Portobello", qty: "30 pieces" },
+        { english: "Grana Padano Cheese", polish: "Ser Grana Padano", qty: "0.5 kg" },
+        { english: "Goat Cheese", polish: "Ser Kozi", qty: "0.5 kg" },
+        { english: "Gouda Cheese", polish: "Ser Gouda", qty: "0.5 kg" },
+        { english: "Polish Halloumi Cheese", polish: "Ser Halloumi Polski", qty: "2 kg" },
+        { english: "Masa Harina", polish: "Masa Harina", qty: "2 kg" },
+        { english: "Asparagus", polish: "Szparagi", qty: "15-20 bunches" },
+        { english: "Beetroot", polish: "Buraki", qty: "6 kg" },
+        { english: "Arugula", polish: "Rukola", qty: "2-3 large bags" },
+        { english: "Corn on the Cob", polish: "Kukurydza w kolbie", qty: "30 pieces" },
+        { english: "Red Bell Peppers", polish: "Czerwona Papryka", qty: "1.5 kg" },
+        { english: "Zucchini", polish: "Cukinia", qty: "1 kg" },
+        { english: "Cherry Tomatoes", polish: "Pomidorki koktajlowe", qty: "1 kg" },
+        { english: "Yellow Onions", polish: "Cebula Żółta", qty: "1 kg" },
+        { english: "Fresh Garlic", polish: "Czosnek Świeży", qty: "15 heads" },
+        { english: "Lemons", polish: "Cytryny", qty: "6 pieces" },
+        { english: "Blueberries", polish: "Borówki", qty: "0.5 kg" },
+        { english: "Feta Cheese", polish: "Ser Feta", qty: "0.75 kg" },
+        { english: "Plain Yogurt", polish: "Jogurt Naturalny", qty: "1 kg" },
+        { english: "Mayonnaise", polish: "Majonez", qty: "0.5 kg" },
+        { english: "Dijon Mustard", polish: "Musztarda Dijon", qty: "0.5 kg" },
+        { english: "Ketchup", polish: "Keczup", qty: "1 kg" },
+        { english: "Balsamic Glaze", polish: "Glazura Balsamiczna", qty: "1-2 bottles" },
+        { english: "Olive Oil", polish: "Oliwa z Oliwek", qty: "1 liter" },
+        { english: "Honey", polish: "Miód", qty: "1 kg" },
+        { english: "Butter", polish: "Masło", qty: "0.5 kg" },
+        { english: "Fresh Rosemary", polish: "Świeży Rozmaryn", qty: "3 bunches" },
+        { english: "Fresh Thyme", polish: "Świeży Tymianek", qty: "3 bunches" },
+        { english: "Fresh Dill", polish: "Świeży Koper", qty: "5 bunches" },
+        { english: "Smoked Paprika", polish: "Wędzona Papryka", qty: "0.1 kg" },
+        { english: "Cayenne Pepper", polish: "Pieprz Cayenne", qty: "50g" },
+        { english: "Salt", polish: "Sól", qty: "1 kg" },
+        { english: "Black Pepper", polish: "Pieprz Czarny", qty: "0.2 kg" },
+        { english: "Charcoal", polish: "Węgiel Drzewny", qty: "7 kg" },
+        { english: "Aluminum Foil (Heavy-Duty)", polish: "Folia Aluminiowa (Gruba)", qty: "2 large rolls" },
+        { english: "Serving Platters (disposable/reusable)", polish: "Tace Serwowania", qty: "10-15 pieces" },
+        { english: "Napkins", polish: "Serwetki", qty: "1 large pack" },
+        { english: "Cutlery (disposable/reusable)", polish: "Sztućce", qty: "30 sets" },
+    ]
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const menuNav = document.getElementById('menu-nav');
+    const menuTitle = document.getElementById('menu-title');
+    const menuDescription = document.getElementById('menu-description');
+    const menuCost = document.getElementById('menu-cost');
+    const mainsList = document.getElementById('mains-list');
+    const sidesList = document.getElementById('sides-list');
+    const condimentsList = document.getElementById('condiments-list');
+    const shoppingListBody = document.getElementById('shopping-list-body');
+
+    function renderMenu(menuKey) {
+        const menu = grillPlan.menus[menuKey];
+        if (!menu) return;
+
+        menuTitle.textContent = menu.name;
+        menuDescription.textContent = menu.description;
+        menuCost.textContent = `Estimated Cost: ${menu.cost}`;
+        
+        // Ensure that the properties are arrays before calling map
+        const createListItems = (items) => (Array.isArray(items) ? items.map(item => `<li>${item}</li>`).join('') : '');
+        mainsList.innerHTML = createListItems(menu.mains);
+        sidesList.innerHTML = createListItems(menu.sides);
+        condimentsList.innerHTML = createListItems(menu.condiments);
+        
+        document.querySelectorAll('#menu-nav button').forEach(button => {
+            button.classList.toggle('active', button.dataset.menu === menuKey);
+        });
+    }
+
+    menuNav.addEventListener('click', (e) => {
+        if (e.target.tagName === 'BUTTON') {
+            const menuKey = e.target.dataset.menu;
+            renderMenu(menuKey);
+        }
+    });
+
+    function renderShoppingList() {
+        shoppingListBody.innerHTML = grillPlan.shoppingList.map(item => `
+            <tr class="bg-white border-b hover:bg-gray-50">
+                <td class="px-6 py-4 font-medium text-gray-900">${item.english}</td>
+                <td class="px-6 py-4">${item.polish}</td>
+                <td class="px-6 py-4">${item.qty}</td>
+            </tr>
+        `).join('');
+    }
+
+    // Removed renderCostChart function as the chart is no longer displayed
+
+    renderMenu('nowoczesny'); // Set "Modern Fusion Grill" as the default displayed menu
+    // Removed renderCostChart() call
+    renderShoppingList();
+});
+
+</script>
+</body>
+</html>
